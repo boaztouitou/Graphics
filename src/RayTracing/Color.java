@@ -24,11 +24,27 @@ public class Color {
         return doubleToByte(g);
     }
 
+    public Color plus(Color c) {
+        return new Color(this.r + c.r, this.g + c.g, this.b + c.b).legalize();
+    }
+
+    public Color multiplyByScalar(double d) {
+        return new Color(this.r * d, this.g * d, this.b * d).legalize();
+    }
+
+    public Color legalize() {
+        return new Color(legalColorDouble(this.r), legalColorDouble(this.g), legalColorDouble(this.b));
+    }
+
     public byte doubleToByte(double d) {
         if (d > 1)
             return Byte.MAX_VALUE;
         if (d < 0)
             return Byte.MIN_VALUE;
         return (byte) (d * 255 - 128);
+    }
+
+    private double legalColorDouble(double d) {
+        return d < 0 ? 0 : (d > 1 ? 1 : d);
     }
 }

@@ -77,7 +77,7 @@ public class Vector {
 
     public Vector ProjectOn(Vector other) {
         double s = Vector.DotProduct(this, other) / Vector.DotProduct(other, other);
-        return this.MultiplyByScalar(s);
+        return other.MultiplyByScalar(s);
     }
 
     public double absoluteSquared() {
@@ -87,6 +87,13 @@ public class Vector {
     public Vector normalized() {
         double length = Math.sqrt(this.absoluteSquared());
         return new Vector(this.x / length, this.y / length, this.z / length);
+    }
+
+    public boolean equals(Vector v) {
+        if (v == null)
+            return false;
+        return Math.abs(this.x - v.x) < 0.000001 && Math.abs(this.y - v.y) < 0.000001
+                && Math.abs(this.z - v.z) < 0.000001;
     }
 
 }

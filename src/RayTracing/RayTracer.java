@@ -224,7 +224,7 @@ public class RayTracer {
             for (int j = 0; j < imageHeight; j++) {
                 Ray ray = scene.ConstructRayThroughPixel(i, j);
                 Intersection hit = scene.FindIntersection(ray);
-                Color color = GetColor(hit);
+                Color color = GetColor(hit, scene.sceneSettings.MaximumRecursion);
                 rgbData[(j * imageWidth + i) * 3] = color.getRed();
                 rgbData[(j * imageWidth + i) * 3 + 1] = color.getGreen();
                 rgbData[(j * imageWidth + i) * 3 + 2] = color.getBlue();
@@ -255,9 +255,28 @@ public class RayTracer {
 
     }
 
-    private Color GetColor(Intersection hit){
-        //TODO
-        return null;
+    private Color GetColor(Intersection hit, int recursion) {
+        if (recursion == 0)
+            return scene.sceneSettings.BackgroundColor;
+        Color color = new Color(0, 0, 0);
+        for (Light light : scene.lights) {
+            Ray ray = new Ray(light.Position, hit.IntersectionPoint);
+            Intersection directHit = scene.FindIntersection(ray);
+            if (directHit!=null&& directHit.IntersectionPoint != null &&
+                    directHit.IntersectionPoint.equals(hit.IntersectionPoint)) {
+                Material material = hit.Surface.GetMaterial();
+                Color backgroundColor = material.Transparency == 0
+                        ? scene.sceneSettings.BackgroundColor
+                        : GetColor(directHit, recursion - 1);
+                Color hitColor = backgroundColor.multiplyByScalar(material.Transparency)
+                        .plus(material.DiffuseColor.plus(material.SpecularColor)
+                                .multiplyByScalar(1 - material.Transparency))
+                        .plus(material.ReflectColor);
+                color = color.plus(hitColor);
+            }
+        }
+        //todo add soft shadows
+        return color;
     }
 
     public static class RayTracerException extends Exception {
