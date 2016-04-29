@@ -129,6 +129,10 @@ public class Vector {
                 this.z);
     }
 
+    public Vector mirror(Vector mirrorVector) {
+        return mirrorVector.MultiplyByScalar(2 * mirrorVector.DotProduct(this)).minus(this);
+    }
+
     @Override
     public String toString() {
         return "Vector{" +

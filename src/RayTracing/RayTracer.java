@@ -243,7 +243,7 @@ public class RayTracer {
                 Intersection hit = scene.FindIntersection(ray);
                 Color color = GetColor(hit, scene.MaximumRecursion);
 
-                int rotateXi = imageWidth-i-1;//needed for some reason
+                int rotateXi = imageWidth - i - 1;//needed for some reason
                 rgbData[(j * imageWidth + rotateXi) * 3] = color.getRed();
                 rgbData[(j * imageWidth + rotateXi) * 3 + 1] = color.getGreen();
                 rgbData[(j * imageWidth + rotateXi) * 3 + 2] = color.getBlue();
@@ -282,13 +282,23 @@ public class RayTracer {
                 Material material = hit.Surface.Material;
                 Color backgroundColor = material.Transparency == 0 ? scene.BackgroundColor
                         : GetColor(directHit, recursion - 1);
-                Color hitColor =  backgroundColor.multiplyByScalar(material.Transparency);
+                Color hitColor = backgroundColor.multiplyByScalar(material.Transparency);
                 Vector L = light.Position.minus(hit.IntersectionPoint);
                 Color diffuse_color = material.DiffuseColor
                         .multiplyByScalar(L.normalized().DotProduct(hit.IntersectionNormal.normalized()))
                         .multiply(light.Color);
                 diffuse_color = diffuse_color.multiplyByScalar(1 - material.Transparency);
-                hitColor = backgroundColor.plus(diffuse_color);
+                hitColor = hitColor.plus(diffuse_color);
+
+                Vector viewer = hit.Ray.V.MultiplyByScalar(-1).normalized();
+                Color specularColor = material.SpecularColor
+                        .multiplyByScalar(Math.pow(
+                                viewer.DotProduct(L.normalized().mirror(directHit.IntersectionNormal)),
+                                material.PhongCoeff)
+                        )
+                        .multiply(light.Color);
+                hitColor = hitColor.plus(specularColor);
+
                 color = color.plus(hitColor);
             }
         }
