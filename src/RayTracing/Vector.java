@@ -1,5 +1,8 @@
 package RayTracing;
 
+import static java.lang.Math.cos;
+import static java.lang.Math.sin;
+
 public class Vector {
     private static final Vector _ZERO = new Vector(0, 0, 0);
     private double x;
@@ -94,6 +97,25 @@ public class Vector {
             return false;
         return Math.abs(this.x - v.x) < 0.000001 && Math.abs(this.y - v.y) < 0.000001
                 && Math.abs(this.z - v.z) < 0.000001;
+    }
+
+    public Vector rotateAroundX(double alpha) {
+        return new Vector(this.x,
+                cos(alpha) * this.y - sin(alpha) * this.z,
+                sin(alpha) * this.y + cos(alpha) * this.z);
+    }
+
+
+    public Vector rotateAroundY(double alpha) {
+        return new Vector(this.x * cos(alpha) + this.z * sin(alpha),
+                this.y,
+                -this.x * sin(alpha) + this.z * cos(alpha));
+    }
+
+    public Vector rotateAroundZ(double alpha) {
+        return new Vector(this.x * cos(alpha) - this.y * sin(alpha),
+                this.x * sin(alpha) + this.y * cos(alpha),
+                this.z);
     }
 
     @Override

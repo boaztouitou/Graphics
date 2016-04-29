@@ -189,16 +189,15 @@ public class RayTracer {
                     System.out.println(String.format("Parsed plane (line %d)",
                             lineNum));
                 } else if (code.equals("cyl")) {
-                    Cylinder cylinder = new Cylinder();
-                    cylinder.CenterPosition = new Vector(
+                    Vector centerPosition = new Vector(
                             parseDouble(params[0]), parseDouble(params[1]),
                             parseDouble(params[2]));
-                    cylinder.Length = parseDouble(params[3]);
-                    cylinder.Radius = parseDouble(params[4]);
-                    cylinder.Rotation = new Vector(parseDouble(params[5]),
+                    double length = parseDouble(params[3]);
+                    double radius = parseDouble(params[4]);
+                    Vector rotationDegree = new Vector(parseDouble(params[5]),
                             parseDouble(params[6]), parseDouble(params[7]));
-                    cylinder.Material = scene.materials
-                            .get(parseInt(params[8]) - 1);
+                    Material material = scene.materials.get(parseInt(params[8]) - 1);
+                    Cylinder cylinder = new Cylinder(centerPosition, length, radius, rotationDegree, material);
                     scene.surfaces.add(cylinder);
                     System.out.println(String.format(
                             "Parsed cylinder (line %d)", lineNum));
@@ -241,14 +240,14 @@ public class RayTracer {
         for (int i = 0; i < imageWidth; i++) {
             for (int j = 0; j < imageHeight; j++) {
                 Ray ray = scene.ConstructRayThroughPixel(i, j);
-
                 Intersection hit = scene.FindIntersection(ray);
-
                 Color color = GetColor(hit, scene.MaximumRecursion);
-           //     System.out.println(i+","+j+" "+color.toString());
-                rgbData[(j * imageWidth + i) * 3] = color.getRed();
-                rgbData[(j * imageWidth + i) * 3 + 1] = color.getGreen();
-                rgbData[(j * imageWidth + i) * 3 + 2] = color.getBlue();
+
+                int rotateXi = imageWidth-i-1;//needed for some reason
+                //     System.out.println(i+","+j+" "+color.toString());
+                rgbData[(j * imageWidth + rotateXi) * 3] = color.getRed();
+                rgbData[(j * imageWidth + rotateXi) * 3 + 1] = color.getGreen();
+                rgbData[(j * imageWidth + rotateXi) * 3 + 2] = color.getBlue();
             }
         }
 
@@ -270,32 +269,32 @@ public class RayTracer {
     }
 
     private Color GetColor(Intersection hit, int recursion) {
-        if (recursion == 0||hit==null)
+        if (recursion == 0 || hit == null)
             return scene.BackgroundColor;
         Color color = new Color(0, 0, 0);
         for (Light light : scene.lights) {
             Ray ray = new Ray(light.Position, hit.IntersectionPoint.minus(light.Position));
-            
+
             Intersection directHit = scene.FindIntersection(ray);
-         //   if(directHit!=null&&directHit.IntersectionPoint!=null) System.out.println("maybe direct hit"+directHit.IntersectionPoint.toString()+hit.IntersectionPoint.toString());
+            //   if(directHit!=null&&directHit.IntersectionPoint!=null) System.out.println("maybe direct hit"+directHit.IntersectionPoint.toString()+hit.IntersectionPoint.toString());
             if (directHit != null
                     && directHit.IntersectionPoint != null
                     && directHit.IntersectionPoint
                     .equals(hit.IntersectionPoint)) {
-              //  System.out.println("found direct hit");
+                //  System.out.println("found direct hit");
                 Material material = hit.Surface.Material;
                 Color backgroundColor = material.Transparency == 0 ? scene.BackgroundColor
                         : GetColor(directHit, recursion - 1);
-                Color hitColor = new Color(0,0,0);
-             //    hitColor = backgroundColor.multiplyByScalar(material.Transparency);
+                Color hitColor = new Color(0, 0, 0);
+                //    hitColor = backgroundColor.multiplyByScalar(material.Transparency);
                 Vector L = light.Position.minus(hit.IntersectionPoint);
-                Color  diffuse_color = material.DiffuseColor.multiplyByScalar(L.normalized().DotProduct(hit.IntersectionNormal.normalized())).multiply(light.Color);
-                 hitColor = diffuse_color.multiplyByScalar(1-material.Transparency);
-             //   hitColor = hitColor.plus(material.DiffuseColor.multiply(light.Color).multiplyByScalar(1-material.Transparency));
-                  //      .plus(material.DiffuseColor.multiply(light.Color)
-                               // .plus(material.SpecularColor).multiplyByScalar(
-                                      //  1 - material.Transparency))
-                     //   .plus(material.ReflectColor);
+                Color diffuse_color = material.DiffuseColor.multiplyByScalar(L.normalized().DotProduct(hit.IntersectionNormal.normalized())).multiply(light.Color);
+                hitColor = diffuse_color.multiplyByScalar(1 - material.Transparency);
+                //   hitColor = hitColor.plus(material.DiffuseColor.multiply(light.Color).multiplyByScalar(1-material.Transparency));
+                //      .plus(material.DiffuseColor.multiply(light.Color)
+                // .plus(material.SpecularColor).multiplyByScalar(
+                //  1 - material.Transparency))
+                //   .plus(material.ReflectColor);
                 color = color.plus(hitColor);
             }
         }

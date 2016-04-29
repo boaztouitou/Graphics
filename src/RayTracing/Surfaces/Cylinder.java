@@ -12,6 +12,17 @@ public class Cylinder extends Surface {
     public double Radius;
     public Vector Rotation;
 
+    public Cylinder(Vector centerPosition, double length, double radius, Vector rotationDegree, Material material) {
+        CenterPosition = centerPosition;
+        Length = length;
+        Radius = radius;
+        Rotation = new Vector(0, 0, 1).rotateAroundX(rotationDegree.getX())
+                .rotateAroundY(rotationDegree.getY())
+                .rotateAroundZ(rotationDegree.getZ())
+                .normalized();
+        Material = material;
+    }
+
     @Override
     public Intersection GetIntersection(Ray ray) {
         Intersection infiniteCylinderIntersection = GetInfiniteCylinderIntersection(ray);
