@@ -4,7 +4,7 @@ import RayTracing.Intersection;
 import RayTracing.Material;
 import RayTracing.Ray;
 
-public interface Surface {
-    Intersection GetIntersection(Ray ray);
-    Material GetMaterial();
+public abstract class Surface {
+    public abstract Intersection GetIntersection(Ray ray);
+    public Material Material;
 }

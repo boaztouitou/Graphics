@@ -4,10 +4,9 @@ import RayTracing.Intersection;
 import RayTracing.Ray;
 import RayTracing.Vector;
 
-public class Sphere implements Surface {
+public class Sphere extends Surface {
     public Vector CenterPosition;
     public double Radius;
-    public RayTracing.Material Material;
 
 
     @Override

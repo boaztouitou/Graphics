@@ -32,7 +32,12 @@ public class Scene {
     Vector ScreenTopLeft;
     Color[][] image;
     Vector[][] PixelLocations;
-
+    public Scene(Vector camPos, Vector lookatPoint, Vector upVector,
+    		double screen_width, double screen_distance, int dim_width, int dim_height){
+    	SetCameraPosition(camPos, lookatPoint, upVector);
+    	SetDimensions(dim_width, dim_height);
+    	SetScreen(screen_distance, screen_width);
+    }
     public void SetCameraPosition(Vector camPos, Vector lookAtPoint, Vector upVector) {
         CamPosition = camPos;
         LookDirection = Vector.minus(lookAtPoint, camPos);
@@ -71,7 +76,7 @@ public class Scene {
 
     public Ray ConstructRayThroughPixel(int i, int j) {
     	if (CamPosition==null ) throw new IllegalArgumentException("Cam Position not set");
-        return new Ray(CamPosition, PixelLocations[i][j]);
+        return new Ray(CamPosition, PixelLocations[i][j].minus(CamPosition));
     }
 
     public Intersection FindIntersection(Ray ray) {
