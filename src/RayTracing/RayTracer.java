@@ -244,7 +244,6 @@ public class RayTracer {
                 Color color = GetColor(hit, scene.MaximumRecursion);
 
                 int rotateXi = imageWidth-i-1;//needed for some reason
-                //     System.out.println(i+","+j+" "+color.toString());
                 rgbData[(j * imageWidth + rotateXi) * 3] = color.getRed();
                 rgbData[(j * imageWidth + rotateXi) * 3 + 1] = color.getGreen();
                 rgbData[(j * imageWidth + rotateXi) * 3 + 2] = color.getBlue();
@@ -276,25 +275,20 @@ public class RayTracer {
             Ray ray = new Ray(light.Position, hit.IntersectionPoint.minus(light.Position));
 
             Intersection directHit = scene.FindIntersection(ray);
-            //   if(directHit!=null&&directHit.IntersectionPoint!=null) System.out.println("maybe direct hit"+directHit.IntersectionPoint.toString()+hit.IntersectionPoint.toString());
             if (directHit != null
                     && directHit.IntersectionPoint != null
                     && directHit.IntersectionPoint
                     .equals(hit.IntersectionPoint)) {
-                //  System.out.println("found direct hit");
                 Material material = hit.Surface.Material;
                 Color backgroundColor = material.Transparency == 0 ? scene.BackgroundColor
                         : GetColor(directHit, recursion - 1);
-                Color hitColor = new Color(0, 0, 0);
-                //    hitColor = backgroundColor.multiplyByScalar(material.Transparency);
+                Color hitColor =  backgroundColor.multiplyByScalar(material.Transparency);
                 Vector L = light.Position.minus(hit.IntersectionPoint);
-                Color diffuse_color = material.DiffuseColor.multiplyByScalar(L.normalized().DotProduct(hit.IntersectionNormal.normalized())).multiply(light.Color);
-                hitColor = diffuse_color.multiplyByScalar(1 - material.Transparency);
-                //   hitColor = hitColor.plus(material.DiffuseColor.multiply(light.Color).multiplyByScalar(1-material.Transparency));
-                //      .plus(material.DiffuseColor.multiply(light.Color)
-                // .plus(material.SpecularColor).multiplyByScalar(
-                //  1 - material.Transparency))
-                //   .plus(material.ReflectColor);
+                Color diffuse_color = material.DiffuseColor
+                        .multiplyByScalar(L.normalized().DotProduct(hit.IntersectionNormal.normalized()))
+                        .multiply(light.Color);
+                diffuse_color = diffuse_color.multiplyByScalar(1 - material.Transparency);
+                hitColor = backgroundColor.plus(diffuse_color);
                 color = color.plus(hitColor);
             }
         }

@@ -1,8 +1,5 @@
 package RayTracing;
 
-import static java.lang.Math.cos;
-import static java.lang.Math.sin;
-
 public class Vector {
     private static final Vector _ZERO = new Vector(0, 0, 0);
     private double x;
@@ -36,6 +33,17 @@ public class Vector {
 
     public static Vector zero() {
         return _ZERO;
+    }
+
+    public static boolean PointOnLine(Vector point1, Vector point2, Vector pointBetween) {
+        double lineLength = Math.sqrt(point1.minus(point2).absoluteSquared());
+        double sumOfDistances = Math.sqrt(point1.minus(pointBetween).absoluteSquared()) +
+                Math.sqrt(point2.minus(pointBetween).absoluteSquared());
+        return Math.abs(lineLength - sumOfDistances) < 0.00001;
+    }
+
+    public static double DistanceFromPoint(Vector v, Vector point) {
+        return Math.sqrt(point.minus(v).CrossProduct(point).absoluteSquared() / v.absoluteSquared());
     }
 
     public double getX() {
@@ -74,6 +82,10 @@ public class Vector {
         return Vector.DotProduct(this, v2);
     }
 
+    public Vector CrossProduct(Vector v2) {
+        return Vector.CrossProduct(this, v2);
+    }
+
     public Vector MultiplyByScalar(double scal) {
         return new Vector(x * scal, y * scal, z * scal);
     }
@@ -105,7 +117,6 @@ public class Vector {
                 sin(alpha) * this.y + cos(alpha) * this.z);
     }
 
-
     public Vector rotateAroundY(double alpha) {
         return new Vector(this.x * cos(alpha) + this.z * sin(alpha),
                 this.y,
@@ -125,5 +136,13 @@ public class Vector {
                 ", y=" + y +
                 ", z=" + z +
                 '}';
+    }
+
+    private double cos(double degree) {
+        return Math.cos(Math.PI * degree / 180);
+    }
+
+    private double sin(double degree) {
+        return Math.sin(Math.PI * degree / 180);
     }
 }

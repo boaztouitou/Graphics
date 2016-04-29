@@ -26,15 +26,15 @@ public class Cylinder extends Surface {
     @Override
     public Intersection GetIntersection(Ray ray) {
         Intersection infiniteCylinderIntersection = GetInfiniteCylinderIntersection(ray);
-        if (infiniteCylinderIntersection != null && !PointIsInCylinder(infiniteCylinderIntersection.IntersectionPoint))
+        if (infiniteCylinderIntersection != null && !PointIsInCylinderPlanes(infiniteCylinderIntersection.IntersectionPoint))
             infiniteCylinderIntersection = null;
 
         //intersect with each plane
         Intersection topIntersection = TopPlane().GetIntersection(ray);
-        if (topIntersection != null && !PointIsInCylinder(topIntersection.IntersectionPoint))
+        if (topIntersection != null && !PointIsInInfiniteCylinder(topIntersection.IntersectionPoint))
             topIntersection = null;
         Intersection bottomIntersection = BottomPlane().GetIntersection(ray);
-        if (bottomIntersection != null && !PointIsInCylinder(bottomIntersection.IntersectionPoint ))
+        if (bottomIntersection != null && !PointIsInInfiniteCylinder(bottomIntersection.IntersectionPoint))
             bottomIntersection = null;
 
         return Intersection.minimal(infiniteCylinderIntersection, bottomIntersection, topIntersection);
@@ -46,57 +46,49 @@ public class Cylinder extends Surface {
         Vector p_a = CenterPosition;
         Vector v_a = Rotation;
         double r = Radius;
-        
+
         double A = v.minus(v_a.MultiplyByScalar(v.DotProduct(v_a))).absoluteSquared();
-        double B = 2*(v.minus(v_a.MultiplyByScalar(v.DotProduct(v_a)))
-        		.DotProduct(
-        				(p.minus(p_a).minus(v_a.MultiplyByScalar(p.minus(p_a).DotProduct(v_a))) )
-        				)
-        				);
-        double C = p.minus(p_a).minus(v_a.MultiplyByScalar(p.minus(p_a).DotProduct(v_a))).absoluteSquared() - r*r;
-        double discr = Math.pow(B, 2)-4*A*C;
+        double B = 2 * (v.minus(v_a.MultiplyByScalar(v.DotProduct(v_a)))
+                .DotProduct(
+                        (p.minus(p_a).minus(v_a.MultiplyByScalar(p.minus(p_a).DotProduct(v_a))))
+                )
+        );
+        double C = p.minus(p_a).minus(v_a.MultiplyByScalar(p.minus(p_a).DotProduct(v_a))).absoluteSquared() - r * r;
+        double discr = Math.pow(B, 2) - 4 * A * C;
         Vector intersection;
-        if(discr<0) return null;
-        if(discr == 0) {
-        	 intersection = ray.P0.plus(ray.V.MultiplyByScalar(-B/(2*A)));
-        	if(intersection.minus(ray.P0).DotProduct(v_a)<0) return null;
-        	
+        if (discr < 0) return null;
+        if (discr == 0) {
+            return null;
         }
-        double root1 = (-B+Math.sqrt(discr))/2*A;
-        double root2 = (-B+Math.sqrt(discr))/2*A;
-        if(root1<0&&root2<0) return null;
-        if (root1<0){
-        	intersection = ray.P0.plus(ray.V.MultiplyByScalar(root2));
-        	
-        	
+        double root1 = (-B + Math.sqrt(discr)) / 2 * A;
+        double root2 = (-B - Math.sqrt(discr)) / 2 * A;
+        if (root1 < 0 && root2 < 0) return null;
+        if (root1 < 0) {
+            intersection = ray.P0.plus(ray.V.MultiplyByScalar(root2));
+        } else if (root2 < 0) {
+            intersection = ray.P0.plus(ray.V.MultiplyByScalar(root1));
+        } else {
+            double root = root1 < root2 ? root1 : root2;
+            intersection = ray.P0.plus(ray.V.MultiplyByScalar(root));
         }
-        else if (root2<0){
-        	intersection = ray.P0.plus(ray.V.MultiplyByScalar(root1));
-        	
-        	
-        }
-        else{
-        	double root = root1<root2?root1:root2;
-        	intersection = ray.P0.plus(ray.V.MultiplyByScalar(root));
-        }
-        
-        
-        
+
         double distance = Math.sqrt(ray.P0.minus(intersection).absoluteSquared());
-    	
-		Surface surface = this;
-		Vector intersectionPoint = intersection;
-		Vector intersectionNormal = intersection.minus(p_a.plus(v_a.MultiplyByScalar(intersection.minus(p_a).DotProduct(v_a))));
-		Intersection res = new Intersection(distance, surface , ray, intersectionPoint , intersectionNormal);
-		return res;
-        
+
+        Surface surface = this;
+        Vector intersectionPoint = intersection;
+        Vector intersectionNormal = intersection.minus(CenterPosition).normalized();
+        Intersection res = new Intersection(distance, surface, ray, intersectionPoint, intersectionNormal);
+        return res;
+
     }
 
     private Plane TopPlane() {
         Plane top = new Plane();
         top.Normal = Rotation;
-        Vector point = Rotation.MultiplyByScalar(Length/2).plus(CenterPosition);
-        top.Offset = Math.sqrt(point.ProjectOn(top.Normal).absoluteSquared());
+        Vector point = Rotation.MultiplyByScalar(Length / 2).plus(CenterPosition);
+        double offsetDirection = (Vector.PointOnLine(Vector.zero(), Rotation, point))
+                ? 1 : -1;
+        top.Offset = offsetDirection * Math.sqrt(point.ProjectOn(top.Normal).absoluteSquared());
         top.Material = Material;
         return top;
     }
@@ -104,22 +96,27 @@ public class Cylinder extends Surface {
     private Plane BottomPlane() {
         Plane bottom = new Plane();
         bottom.Normal = Rotation;
-        Vector point = Vector.zero().minus(Rotation.MultiplyByScalar(Length/2)).plus(CenterPosition);
-        bottom.Offset = Math.sqrt(point.ProjectOn(bottom.Normal).absoluteSquared());
+        Vector point = Vector.zero().minus(Rotation.MultiplyByScalar(Length / 2)).plus(CenterPosition);
+        double offsetDirection = (Vector.PointOnLine(Vector.zero(), Rotation, point))
+                ? 1 : -1;
+        bottom.Offset = offsetDirection * Math.sqrt(point.ProjectOn(bottom.Normal).absoluteSquared());
         bottom.Material = Material;
         return bottom;
     }
 
-    private boolean PointIsInCylinder(Vector point) {
-    	Ray r = new Ray(CenterPosition, Rotation);
-        Intersection bottom = BottomPlane().GetIntersection(r);
-        Intersection top = TopPlane().GetIntersection(r);
-        Vector bottom_point = bottom.IntersectionPoint;
-        Vector top_point = top.IntersectionPoint;
-        Vector mid_up = top_point.minus(point);
-        Vector mid_down = bottom_point.minus(point);
-        if(mid_up.DotProduct(mid_down)<0) return true;
-        return false;
+    private boolean PointIsInCylinderPlanes(Vector point) {
+        Ray rayUp = new Ray(point, Rotation);
+        Ray rayDown = new Ray(point, Rotation.MultiplyByScalar(-1));
+        Intersection bottom = BottomPlane().GetIntersection(rayDown);
+        Intersection top = TopPlane().GetIntersection(rayUp);
+        if (bottom == null || top == null) {
+            return false;//todo handle parallel
+        }
+        return Vector.PointOnLine(top.IntersectionPoint, bottom.IntersectionPoint, point);
     }
-    
+
+    private boolean PointIsInInfiniteCylinder(Vector point) {
+        return Vector.DistanceFromPoint(Rotation, point.minus(CenterPosition)) < Radius;
+    }
+
 }

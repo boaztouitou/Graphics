@@ -15,11 +15,11 @@ public class Plane extends Surface {
         if (Math.abs(ray.V.DotProduct(Normal)) < 0.0001)//parallel
             return null;
 
-        double d = (Offset - ray.P0.DotProduct(Normal)) / ray.V.DotProduct(Normal);
+        Vector pointOnPlaneNormal = Normal.MultiplyByScalar(Offset);
+        double d = pointOnPlaneNormal.minus(ray.P0).DotProduct(Normal) / ray.V.DotProduct(Normal);
         if (d < 0)
             return null;
         Vector intersectionPoint = ray.P0.plus(ray.V.normalized().MultiplyByScalar(d));
-    //    System.out.println("plane intersected");
         return new Intersection(d, this, ray, intersectionPoint, Normal);
     }
 }

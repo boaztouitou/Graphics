@@ -27,4 +27,15 @@ public class Intersection {
         }
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "Intersection{" +
+                "Distance=" + Distance +
+                ", Surface=" + Surface +
+                ", Ray=" + Ray +
+                ", IntersectionPoint=" + IntersectionPoint +
+                ", IntersectionNormal=" + IntersectionNormal +
+                '}';
+    }
 }

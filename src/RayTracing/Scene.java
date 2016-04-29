@@ -9,8 +9,6 @@ import java.util.List;
 public class Scene {
 
     public java.util.List<Material> materials = new ArrayList<>();
-    //  public Camera camera;
-    //  public SceneSettings sceneSettings;
     public List<Surface> surfaces = new ArrayList<>();
     public List<Light> lights = new ArrayList<>();
     public Color BackgroundColor;
@@ -78,7 +76,6 @@ public class Scene {
 
     public Ray ConstructRayThroughPixel(int i, int j) {
         if (CamPosition == null) throw new IllegalArgumentException("Cam Position not set");
-      //  System.out.println("creating ray " + i + "," + j);
         return new Ray(CamPosition, PixelLocations[i][j].minus(CamPosition));
     }
 

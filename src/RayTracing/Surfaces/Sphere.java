@@ -35,9 +35,6 @@ public class Sphere extends Surface {
 				.MultiplyByScalar(d));
 		Vector intersectionNormal = intersectionPoint.minus(CenterPosition)
 				.normalized();
-	//	System.out.println("sphere of radius " + Radius + " and center "
-			//	+ CenterPosition.toString() + " intersected - discriminant is "
-			//	+ discriminant + ",\n, intersection vector is "+intersectionPoint);
 		return new Intersection(d, this, ray, intersectionPoint,
 				intersectionNormal);
 	}
