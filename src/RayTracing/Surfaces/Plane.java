@@ -5,10 +5,9 @@ import RayTracing.Material;
 import RayTracing.Ray;
 import RayTracing.Vector;
 
-public class Plane implements Surface {
+public class Plane extends Surface {
     public Vector Normal;
     public double Offset;
-    public Material Material;
 
     @Override
     public Intersection GetIntersection(Ray ray) {

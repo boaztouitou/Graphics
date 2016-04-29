@@ -6,12 +6,11 @@ import RayTracing.Material;
 import RayTracing.Ray;
 import RayTracing.Vector;
 
-public class Cylinder implements Surface {
+public class Cylinder extends Surface {
     public Vector CenterPosition;
     public double Length;
     public double Radius;
     public Vector Rotation;
-    public Material Material;
 
     @Override
     public Intersection GetIntersection(Ray ray) {

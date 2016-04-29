@@ -140,12 +140,10 @@ public class RayTracer {
                     scene.camera = camera;
                     System.out.println(String.format("Parsed camera parameters (line %d)", lineNum));
                 } else if (code.equals("set")) {
-                    SceneSettings sceneSettings = new SceneSettings();
-                    sceneSettings.BackgroundColor = new Color(parseDouble(params[0]), parseDouble(params[1]),
+                    scene.BackgroundColor = new Color(parseDouble(params[0]), parseDouble(params[1]),
                             parseDouble(params[2]));
-                    sceneSettings.RootNumberOfShadowRays = parseInt(params[3]);
-                    sceneSettings.MaximumRecursion = parseInt(params[4]);
-                    scene.sceneSettings = sceneSettings;
+                    scene.RootNumberOfShadowRays = parseInt(params[3]);
+                    scene.MaximumRecursion = parseInt(params[4]);
                     System.out.println(String.format("Parsed general settings (line %d)", lineNum));
                 } else if (code.equals("mtl")) {
                     Material material = new Material();
@@ -224,22 +222,12 @@ public class RayTracer {
             for (int j = 0; j < imageHeight; j++) {
                 Ray ray = scene.ConstructRayThroughPixel(i, j);
                 Intersection hit = scene.FindIntersection(ray);
-                Color color = GetColor(hit, scene.sceneSettings.MaximumRecursion);
+                Color color = GetColor(hit, scene.MaximumRecursion);
                 rgbData[(j * imageWidth + i) * 3] = color.getRed();
                 rgbData[(j * imageWidth + i) * 3 + 1] = color.getGreen();
                 rgbData[(j * imageWidth + i) * 3 + 2] = color.getBlue();
             }
         }
-
-        // Put your ray tracing code here!
-        //
-        // Write pixel color values in RGB format to rgbData:
-        // Pixel [x, y] red component is in rgbData[(y * this.imageWidth + x) * 3]
-        //            green component is in rgbData[(y * this.imageWidth + x) * 3 + 1]
-        //             blue component is in rgbData[(y * this.imageWidth + x) * 3 + 2]
-        //
-        // Each of the red, green and blue components should be a byte, i.e. 0-255
-
 
         long endTime = System.currentTimeMillis();
         Long renderTime = endTime - startTime;
@@ -257,16 +245,16 @@ public class RayTracer {
 
     private Color GetColor(Intersection hit, int recursion) {
         if (recursion == 0)
-            return scene.sceneSettings.BackgroundColor;
+            return scene.BackgroundColor;
         Color color = new Color(0, 0, 0);
         for (Light light : scene.lights) {
             Ray ray = new Ray(light.Position, hit.IntersectionPoint);
             Intersection directHit = scene.FindIntersection(ray);
             if (directHit!=null&& directHit.IntersectionPoint != null &&
                     directHit.IntersectionPoint.equals(hit.IntersectionPoint)) {
-                Material material = hit.Surface.GetMaterial();
+                Material material = hit.Surface.Material;
                 Color backgroundColor = material.Transparency == 0
-                        ? scene.sceneSettings.BackgroundColor
+                        ? scene.BackgroundColor
                         : GetColor(directHit, recursion - 1);
                 Color hitColor = backgroundColor.multiplyByScalar(material.Transparency)
                         .plus(material.DiffuseColor.plus(material.SpecularColor)
