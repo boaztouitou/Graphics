@@ -96,4 +96,12 @@ public class Vector {
                 && Math.abs(this.z - v.z) < 0.000001;
     }
 
+    @Override
+    public String toString() {
+        return "Vector{" +
+                "x=" + x +
+                ", y=" + y +
+                ", z=" + z +
+                '}';
+    }
 }

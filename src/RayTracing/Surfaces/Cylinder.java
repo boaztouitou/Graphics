@@ -15,15 +15,15 @@ public class Cylinder extends Surface {
     @Override
     public Intersection GetIntersection(Ray ray) {
         Intersection infiniteCylinderIntersection = GetInfiniteCylinderIntersection(ray);
-        if (infiniteCylinderIntersection != null && !PointIsInCylinder(infiniteCylinderIntersection.IntersectionPoint,ray))
+        if (infiniteCylinderIntersection != null && !PointIsInCylinder(infiniteCylinderIntersection.IntersectionPoint))
             infiniteCylinderIntersection = null;
 
         //intersect with each plane
         Intersection topIntersection = TopPlane().GetIntersection(ray);
-        if (topIntersection != null && !PointIsInCylinder(topIntersection.IntersectionPoint,ray))
+        if (topIntersection != null && !PointIsInCylinder(topIntersection.IntersectionPoint))
             topIntersection = null;
         Intersection bottomIntersection = BottomPlane().GetIntersection(ray);
-        if (bottomIntersection != null && !PointIsInCylinder(bottomIntersection.IntersectionPoint ,ray))
+        if (bottomIntersection != null && !PointIsInCylinder(bottomIntersection.IntersectionPoint ))
             bottomIntersection = null;
 
         return Intersection.minimal(infiniteCylinderIntersection, bottomIntersection, topIntersection);
@@ -99,9 +99,10 @@ public class Cylinder extends Surface {
         return bottom;
     }
 
-    private boolean PointIsInCylinder(Vector point, Ray ray) {
-        Intersection bottom = BottomPlane().GetIntersection(ray);
-        Intersection top = TopPlane().GetIntersection(ray);
+    private boolean PointIsInCylinder(Vector point) {
+    	Ray r = new Ray(CenterPosition, Rotation);
+        Intersection bottom = BottomPlane().GetIntersection(r);
+        Intersection top = TopPlane().GetIntersection(r);
         Vector bottom_point = bottom.IntersectionPoint;
         Vector top_point = top.IntersectionPoint;
         Vector mid_up = top_point.minus(point);

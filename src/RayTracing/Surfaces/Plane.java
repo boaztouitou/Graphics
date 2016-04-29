@@ -11,6 +11,7 @@ public class Plane extends Surface {
 
     @Override
     public Intersection GetIntersection(Ray ray) {
+    	
         if (Math.abs(ray.V.DotProduct(Normal)) < 0.0001)//parallel
             return null;
 
@@ -18,6 +19,7 @@ public class Plane extends Surface {
         if (d < 0)
             return null;
         Vector intersectionPoint = ray.P0.plus(ray.V.normalized().MultiplyByScalar(d));
+    //    System.out.println("plane intersected");
         return new Intersection(d, this, ray, intersectionPoint, Normal);
     }
 }

@@ -41,10 +41,22 @@ public class Color {
             return Byte.MAX_VALUE;
         if (d < 0)
             return Byte.MIN_VALUE;
-        return (byte) (d * 255 - 128);
+        return (byte) (d * 255);
     }
 
     private double legalColorDouble(double d) {
         return d < 0 ? 0 : (d > 1 ? 1 : d);
+    }
+    public Color multiply(Color other){
+    	return new Color(r*other.r, g*other.g, b*other.b).legalize();
+    }
+
+    @Override
+    public String toString() {
+        return "Color{" +
+                "r=" + r +
+                ", g=" + g +
+                ", b=" + b +
+                '}';
     }
 }

@@ -61,8 +61,10 @@ public class RayTracer {
             // } catch (IOException e) {
             // System.out.println(e.getMessage());
         } catch (RayTracerException e) {
+            e.printStackTrace();
             System.out.println(e.getMessage());
         } catch (Exception e) {
+            e.printStackTrace();
             System.out.println(e.getMessage());
         }
 
@@ -232,15 +234,18 @@ public class RayTracer {
      */
     public void renderScene(String outputFileName) {
         long startTime = System.currentTimeMillis();
-
+        System.out.println("starting render scene" + startTime);
         // Create a byte array to hold the pixel data:
         byte[] rgbData = new byte[this.imageWidth * this.imageHeight * 3];
 
         for (int i = 0; i < imageWidth; i++) {
             for (int j = 0; j < imageHeight; j++) {
                 Ray ray = scene.ConstructRayThroughPixel(i, j);
+
                 Intersection hit = scene.FindIntersection(ray);
+
                 Color color = GetColor(hit, scene.MaximumRecursion);
+           //     System.out.println(i+","+j+" "+color.toString());
                 rgbData[(j * imageWidth + i) * 3] = color.getRed();
                 rgbData[(j * imageWidth + i) * 3 + 1] = color.getGreen();
                 rgbData[(j * imageWidth + i) * 3 + 2] = color.getBlue();
@@ -265,25 +270,32 @@ public class RayTracer {
     }
 
     private Color GetColor(Intersection hit, int recursion) {
-        if (recursion == 0)
+        if (recursion == 0||hit==null)
             return scene.BackgroundColor;
         Color color = new Color(0, 0, 0);
         for (Light light : scene.lights) {
             Ray ray = new Ray(light.Position, hit.IntersectionPoint.minus(light.Position));
+            
             Intersection directHit = scene.FindIntersection(ray);
+         //   if(directHit!=null&&directHit.IntersectionPoint!=null) System.out.println("maybe direct hit"+directHit.IntersectionPoint.toString()+hit.IntersectionPoint.toString());
             if (directHit != null
                     && directHit.IntersectionPoint != null
                     && directHit.IntersectionPoint
                     .equals(hit.IntersectionPoint)) {
+              //  System.out.println("found direct hit");
                 Material material = hit.Surface.Material;
                 Color backgroundColor = material.Transparency == 0 ? scene.BackgroundColor
                         : GetColor(directHit, recursion - 1);
-                Color hitColor = backgroundColor
-                        .multiplyByScalar(material.Transparency)
-                        .plus(material.DiffuseColor
-                                .plus(material.SpecularColor).multiplyByScalar(
-                                        1 - material.Transparency))
-                        .plus(material.ReflectColor);
+                Color hitColor = new Color(0,0,0);
+             //    hitColor = backgroundColor.multiplyByScalar(material.Transparency);
+                Vector L = light.Position.minus(hit.IntersectionPoint);
+                Color  diffuse_color = material.DiffuseColor.multiplyByScalar(L.normalized().DotProduct(hit.IntersectionNormal.normalized())).multiply(light.Color);
+                 hitColor = diffuse_color.multiplyByScalar(1-material.Transparency);
+             //   hitColor = hitColor.plus(material.DiffuseColor.multiply(light.Color).multiplyByScalar(1-material.Transparency));
+                  //      .plus(material.DiffuseColor.multiply(light.Color)
+                               // .plus(material.SpecularColor).multiplyByScalar(
+                                      //  1 - material.Transparency))
+                     //   .plus(material.ReflectColor);
                 color = color.plus(hitColor);
             }
         }

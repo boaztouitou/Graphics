@@ -6,6 +6,14 @@ public class Ray {
 
     public Ray(Vector p0, Vector v) {
         P0 = p0;
-        V = v;
+        V = v.normalized();
+    }
+
+    @Override
+    public String toString() {
+        return "Ray{" +
+                "P0=" + P0 +
+                ", V=" + V +
+                '}';
     }
 }
