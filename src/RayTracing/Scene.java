@@ -9,8 +9,8 @@ import java.util.List;
 public class Scene {
 
     public java.util.List<Material> materials = new ArrayList<>();
-    public Camera camera;
-    public SceneSettings sceneSettings;
+  //  public Camera camera;
+  //  public SceneSettings sceneSettings;
     public List<Surface> surfaces = new ArrayList<>();
     public List<Light> lights = new ArrayList<>();
 
@@ -19,7 +19,10 @@ public class Scene {
     Vector LookDirection = null;
     Vector UpVector = null;
     Vector LeftVector = null;
-
+    
+    public Color BackgroundColor;
+    public int RootNumberOfShadowRays;
+    public int MaximumRecursion;
 
     double ScreenDistance;
     double ScreenWidth;
@@ -67,7 +70,8 @@ public class Scene {
     }
 
     public Ray ConstructRayThroughPixel(int i, int j) {
-        return new Ray(camera.Position, PixelLocations[i][j]);
+    	if (CamPosition==null ) throw new IllegalArgumentException("Cam Position not set");
+        return new Ray(CamPosition, PixelLocations[i][j]);
     }
 
     public Intersection FindIntersection(Ray ray) {

@@ -77,7 +77,7 @@ public class Vector {
 
     public Vector ProjectOn(Vector other) {
         double s = Vector.DotProduct(this, other) / Vector.DotProduct(other, other);
-        return this.MultiplyByScalar(s);
+        return other.MultiplyByScalar(s);
     }
 
     public double absoluteSquared() {

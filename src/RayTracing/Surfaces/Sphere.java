@@ -18,8 +18,8 @@ public class Sphere implements Surface {
         if (discriminant < 0) {
             return null;
         }
-        double d1 = -b - Math.sqrt(discriminant);
-        double d2 = -b + Math.sqrt(discriminant);
+        double d1 = (-b - Math.sqrt(discriminant))/2;
+        double d2 = (-b + Math.sqrt(discriminant))/2;
         double d;
         if (d1 > 0 && d2 > 0)
             d = Math.min(d1, d2);
