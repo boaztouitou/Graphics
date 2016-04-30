@@ -50,6 +50,10 @@ public class Color {
     public Color multiply(Color other){
     	return new Color(r*other.r, g*other.g, b*other.b).legalize();
     }
+    public boolean equals(Color other){
+    	if(Math.abs(r-other.r)+Math.abs(b-other.b)+Math.abs(g-other.g)<0.00001) return true;
+    	return false;
+    }
 
     @Override
     public String toString() {

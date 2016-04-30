@@ -23,7 +23,7 @@ public class Intersection {
         Intersection result = null;
         for (Intersection intersection : intersections) {
             if (intersection != null && (result == null || result.Distance > intersection.Distance))
-                result = intersection;
+            	if(intersection.Distance>00.00001) result = intersection;
         }
         return result;
     }

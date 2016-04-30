@@ -142,7 +142,8 @@ public class Vector {
     }
 
     public Vector mirror(Vector mirrorVector) {
-        return mirrorVector.MultiplyByScalar(2 * mirrorVector.DotProduct(this)).minus(this);
+       // return mirrorVector.MultiplyByScalar(2 * mirrorVector.DotProduct(this)).minus(this);
+    	return this.minus(mirrorVector.MultiplyByScalar(2*this.DotProduct(mirrorVector)));
     }
 
     @Override
