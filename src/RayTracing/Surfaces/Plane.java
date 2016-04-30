@@ -27,7 +27,7 @@ public class Plane extends Surface {
 
         Vector pointOnPlane = Normal.MultiplyByScalar(Offset);
         double d = pointOnPlane.minus(ray.P0).DotProduct(Normal) / ray.V.DotProduct(Normal);
-        if (d < 0)
+        if (d < 0.00001)
             return null;
         Vector intersectionPoint = ray.P0.plus(ray.V.normalized().MultiplyByScalar(d));
         if(ray.V.DotProduct(Normal)>0)

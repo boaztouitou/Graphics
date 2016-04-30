@@ -12,8 +12,8 @@ public class Sphere extends Surface {
 	public Intersection GetIntersection(Ray ray) {
 		double b = ray.V.MultiplyByScalar(2).DotProduct(
 				ray.P0.minus(CenterPosition));
-		double c = ray.P0.minus(CenterPosition).absoluteSquared() - Radius
-				* Radius;
+		double c = ray.P0.minus(CenterPosition).absoluteSquared()
+				- (Radius * Radius);
 
 		double a = 1;
 		double discriminant = b * b - 4 * a * c;
@@ -30,7 +30,7 @@ public class Sphere extends Surface {
 		else if (d2 > 0 && d1 < 0)
 			d = d2;
 		else
-			d = 0;
+			return null;
 		Vector intersectionPoint = ray.P0.plus(ray.V.normalized()
 				.MultiplyByScalar(d));
 		Vector intersectionNormal = intersectionPoint.minus(CenterPosition)

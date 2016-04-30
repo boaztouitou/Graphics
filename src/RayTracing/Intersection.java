@@ -23,7 +23,10 @@ public class Intersection {
         Intersection result = null;
         for (Intersection intersection : intersections) {
             if (intersection != null && (result == null || result.Distance > intersection.Distance))
-            	if(intersection.Distance>00.00001) result = intersection;
+            	if(intersection.Distance>0) result = intersection;
+            	else{
+            		//System.out.println("Error intersectiong with "+intersection.Surface.getClass().getSimpleName());
+            	}
         }
         return result;
     }

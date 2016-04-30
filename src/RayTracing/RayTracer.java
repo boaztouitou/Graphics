@@ -328,7 +328,7 @@ public class RayTracer {
         if (material.Transparency > 0.0000001) {
             Ray transparency = new Ray(
                     cameraHit.IntersectionPoint.plus(cameraHit.Ray.V
-                            .MultiplyByScalar(0.000001)), cameraHit.Ray.V);
+                            .MultiplyByScalar(1e-6)), cameraHit.Ray.V);
             Color trans = findIntersectionAndColor(transparency, recursion - 1)
                     .legalize();
 
@@ -342,7 +342,7 @@ public class RayTracer {
         Vector n = cameraHit.IntersectionNormal;
         double scalar = 2 * i.DotProduct(n);
         Vector r = i.minus(n.MultiplyByScalar(scalar));
-        Vector outpoint = cameraHit.IntersectionPoint.plus(r.MultiplyByScalar(0.00001));
+        Vector outpoint = cameraHit.IntersectionPoint.plus(r.MultiplyByScalar(1e-6));
         Ray rayToReflection = new Ray(outpoint, r);
         //rayToReflection = new Ray()
         //	rayToReflection = new Ray(rayToReflection.P0.plus(rayToReflection.V.MultiplyByScalar(0.001)),rayToReflection.V);
