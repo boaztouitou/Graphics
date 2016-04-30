@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Random;
 
 import static java.lang.Double.parseDouble;
 import static java.lang.Integer.parseInt;
@@ -240,8 +241,7 @@ public class RayTracer {
         for (int i = 0; i < imageWidth; i++) {
             for (int j = 0; j < imageHeight; j++) {
                 Ray ray = scene.ConstructRayThroughPixel(i, j);
-                Intersection hit = scene.FindIntersection(ray);
-                Color color = GetColor(hit, scene.MaximumRecursion);
+                Color color = findIntersectionAndColor(ray, scene.MaximumRecursion);
 
                 int rotateXi = imageWidth - i - 1;//needed for some reason
                 rgbData[(j * imageWidth + rotateXi) * 3] = color.getRed();
@@ -267,43 +267,83 @@ public class RayTracer {
 
     }
 
+    private Color findIntersectionAndColor(Ray ray, int recursion) {
+        Intersection hit = scene.FindIntersection(ray);
+        Color color = GetColor(hit, recursion);
+        return color;
+    }
+
     private Color GetColor(Intersection hit, int recursion) {
         if (recursion == 0 || hit == null)
             return scene.BackgroundColor;
         Color color = new Color(0, 0, 0);
         for (Light light : scene.lights) {
             Ray ray = new Ray(light.Position, hit.IntersectionPoint.minus(light.Position));
-
             Intersection directHit = scene.FindIntersection(ray);
-            if (directHit != null
-                    && directHit.IntersectionPoint != null
-                    && directHit.IntersectionPoint
-                    .equals(hit.IntersectionPoint)) {
-                Material material = hit.Surface.Material;
-                Color backgroundColor = material.Transparency == 0 ? scene.BackgroundColor
-                        : GetColor(directHit, recursion - 1);
-                Color hitColor = backgroundColor.multiplyByScalar(material.Transparency);
-                Vector L = light.Position.minus(hit.IntersectionPoint);
-                Color diffuse_color = material.DiffuseColor
-                        .multiplyByScalar(L.normalized().DotProduct(hit.IntersectionNormal.normalized()))
-                        .multiply(light.Color);
-                diffuse_color = diffuse_color.multiplyByScalar(1 - material.Transparency);
-                hitColor = hitColor.plus(diffuse_color);
-
-                Vector viewer = hit.Ray.V.MultiplyByScalar(-1).normalized();
-                Color specularColor = material.SpecularColor
-                        .multiplyByScalar(Math.pow(
-                                viewer.DotProduct(L.normalized().mirror(directHit.IntersectionNormal)),
-                                material.PhongCoeff)
-                        )
-                        .multiply(light.Color);
-                hitColor = hitColor.plus(specularColor);
-
-                color = color.plus(hitColor);
+            if (directHit != null && directHit.IntersectionPoint != null) {
+                if (directHit.IntersectionPoint.equals(hit.IntersectionPoint)) {
+                    Color hitColor = getHitColor(light, hit, directHit, recursion);
+                    color = color.plus(hitColor);
+                }else {
+                    Color shadowColor = getSoftShadowColor(light, ray, hit.IntersectionPoint);
+                    color = color.plus(shadowColor);
+                }
             }
         }
-        // todo add soft shadows
+
         return color;
+    }
+
+    private Color getHitColor(Light light, Intersection cameraHit, Intersection lightHit, int recursion) {
+        Material material = cameraHit.Surface.Material;
+        Color backgroundColor = material.Transparency == 0 ? scene.BackgroundColor
+                : findIntersectionAndColor(new Ray(lightHit.IntersectionPoint, lightHit.Ray.V), recursion - 1);
+        Color hitColor = backgroundColor.multiplyByScalar(material.Transparency);
+        Vector L = light.Position.minus(cameraHit.IntersectionPoint);
+        Color diffuse_color = material.DiffuseColor
+                .multiplyByScalar(L.normalized().DotProduct(cameraHit.IntersectionNormal.normalized()))
+                .multiply(light.Color);
+        diffuse_color = diffuse_color.multiplyByScalar(1 - material.Transparency);
+        hitColor = hitColor.plus(diffuse_color);
+
+        Vector viewer = cameraHit.Ray.V.MultiplyByScalar(-1).normalized();
+        Color specularColor = material.SpecularColor
+                .multiplyByScalar(Math.pow(
+                        viewer.DotProduct(L.normalized().mirror(lightHit.IntersectionNormal)),
+                        material.PhongCoeff)
+                )
+                .multiply(light.Color)
+                .multiplyByScalar(light.SpecularIntensity);
+        hitColor = hitColor.plus(specularColor);
+
+        //todo reflection color
+        return hitColor;
+    }
+
+    private Color getSoftShadowColor(Light light, Ray lightRay, Vector target) {
+        Vector upVector = lightRay.V.findPerpendicularXZ();
+        Vector leftVector = lightRay.V.findPerpendicularXY();
+        int n = scene.RootNumberOfShadowRays;
+        double r = light.WidthRadius;
+        double cellLength = 2 * r / n;
+        Random rand = new Random();
+        Vector topLeft = light.Position
+                .plus(leftVector.MultiplyByScalar(r))
+                .plus(upVector.MultiplyByScalar(r));
+        int hitCount = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                Vector source = topLeft//go to top left of the square
+                        .minus(leftVector.MultiplyByScalar((i + rand.nextDouble()) * cellLength)) //skip cells seen
+                        .minus(upVector.MultiplyByScalar((j + rand.nextDouble()) * cellLength));
+                Intersection hit = scene.FindIntersection(new Ray(source, target.minus(source)));
+                if (hit != null && hit.IntersectionPoint.equals(target))
+                    hitCount++;
+            }
+        }
+        double hitRate = ((double) hitCount) / (n * n);
+        Color shadowColor = light.Color.multiplyByScalar((1 - light.ShadowIntensity) * hitRate);
+        return shadowColor;
     }
 
     public static class RayTracerException extends Exception {

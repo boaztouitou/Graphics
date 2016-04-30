@@ -99,9 +99,21 @@ public class Vector {
         return this.x * this.x + this.y * this.y + this.z * this.z;
     }
 
+    public double length() {
+        return Math.sqrt(this.absoluteSquared());
+    }
+
     public Vector normalized() {
         double length = Math.sqrt(this.absoluteSquared());
         return new Vector(this.x / length, this.y / length, this.z / length);
+    }
+
+    public Vector findPerpendicularXY() {
+        return new Vector(this.getY(), -1 * this.getX(), 0).normalized();
+    }
+
+    public Vector findPerpendicularXZ() {
+        return new Vector(-1 * this.getZ(), 0, this.getX()).normalized();
     }
 
     public boolean equals(Vector v) {

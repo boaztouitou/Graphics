@@ -1,7 +1,6 @@
 package RayTracing.Surfaces;
 
 import RayTracing.Intersection;
-import RayTracing.Material;
 import RayTracing.Ray;
 import RayTracing.Vector;
 
@@ -9,9 +8,20 @@ public class Plane extends Surface {
     public Vector Normal;
     public double Offset;
 
+    public Plane() {
+    }
+
+    public Plane(Vector point, Vector normal) {
+        Vector planeNormalIntersection = point.ProjectOn(normal);
+        double offsetDirection = (Vector.PointOnLine(Vector.zero(), normal.MultiplyByScalar(999), point))
+                ? 1 : -1;
+        Normal = normal.normalized();
+        Offset = planeNormalIntersection.length() * offsetDirection;
+    }
+
     @Override
     public Intersection GetIntersection(Ray ray) {
-    	
+
         if (Math.abs(ray.V.DotProduct(Normal)) < 0.0001)//parallel
             return null;
 
