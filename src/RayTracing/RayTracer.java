@@ -284,10 +284,13 @@ public class RayTracer {
                 if (directHit.IntersectionPoint.equals(hit.IntersectionPoint)) {
                     Color hitColor = getHitColor(light, hit, directHit, recursion);
                     color = color.plus(hitColor);
-                }else {
-                    Color shadowColor = getSoftShadowColor(light, ray, hit.IntersectionPoint);
+                } else {
+                    Color shadowColor = getSoftShadowColor(light, ray, hit.IntersectionPoint, hit);
                     color = color.plus(shadowColor);
                 }
+            } else {
+                Color shadowColor = getSoftShadowColor(light, ray, hit.IntersectionPoint, hit);
+                color = color.plus(shadowColor);
             }
         }
 
@@ -316,11 +319,17 @@ public class RayTracer {
                 .multiplyByScalar(light.SpecularIntensity);
         hitColor = hitColor.plus(specularColor);
 
-        //todo reflection color
+
+        Ray rayToReflection = new Ray(cameraHit.IntersectionPoint, L.mirror(lightHit.IntersectionNormal));
+        Color reflectionColor = findIntersectionAndColor(rayToReflection, recursion - 1)
+                .multiply(material.ReflectColor);
+
+        hitColor = hitColor.plus(reflectionColor);
+
         return hitColor;
     }
 
-    private Color getSoftShadowColor(Light light, Ray lightRay, Vector target) {
+    private Color getSoftShadowColor(Light light, Ray lightRay, Vector target, Intersection cameraHit) {
         Vector upVector = lightRay.V.findPerpendicularXZ();
         Vector leftVector = lightRay.V.findPerpendicularXY();
         int n = scene.RootNumberOfShadowRays;
@@ -331,18 +340,22 @@ public class RayTracer {
                 .plus(leftVector.MultiplyByScalar(r))
                 .plus(upVector.MultiplyByScalar(r));
         int hitCount = 0;
+        Color hitColor = new Color(0, 0, 0);
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 Vector source = topLeft//go to top left of the square
                         .minus(leftVector.MultiplyByScalar((i + rand.nextDouble()) * cellLength)) //skip cells seen
                         .minus(upVector.MultiplyByScalar((j + rand.nextDouble()) * cellLength));
                 Intersection hit = scene.FindIntersection(new Ray(source, target.minus(source)));
-                if (hit != null && hit.IntersectionPoint.equals(target))
+                if (hit != null && hit.IntersectionPoint.equals(target)) {
                     hitCount++;
+                    if (hitCount == 1)
+                        hitColor = getHitColor(light, cameraHit, hit, 1);
+                }
             }
         }
         double hitRate = ((double) hitCount) / (n * n);
-        Color shadowColor = light.Color.multiplyByScalar((1 - light.ShadowIntensity) * hitRate);
+        Color shadowColor = hitColor.multiplyByScalar((1 - light.ShadowIntensity) + light.ShadowIntensity * hitRate);
         return shadowColor;
     }
 
